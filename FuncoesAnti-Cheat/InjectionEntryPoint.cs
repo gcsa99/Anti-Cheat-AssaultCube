@@ -12,19 +12,6 @@ namespace FuncoesAC
         ServerInterface _server = null;
         Queue<string> _messageQueue = new Queue<string>();
 
-        //lista de nomes de processos suspeitos
-        private static readonly List<string> ForbiddenProcesses = new List<string>
-        {
-            "cheatengine",
-            "cheat",
-            "aim",
-            "esp",
-            "wall",
-            "hacking",
-            "form",
-            "hack",
-            "h4ck",
-        };
 
         //DLLs Conhecidas
         private static readonly List<string> _whitelist = new List<string>
@@ -119,7 +106,8 @@ namespace FuncoesAC
         "bcrypt.dll",
         "avrt.dll",
         "AudioSes.dll",
-        "advapi32.dll"
+        "advapi32.dll",
+        "DLL-Permitida.dll"
     };
 
         //estabeleço a comunicação do ipc
@@ -130,13 +118,24 @@ namespace FuncoesAC
             _server.Ping();
         }
 
-        //verifico os processos rodando
+        //lista de nomes de processos suspeitos
+        private static readonly List<string> ForbiddenProcesses = new List<string>
+        {
+            "cheatengine",
+            "cheat",
+            "aim",
+            "esp",
+            "wall",
+            "hacking",
+            "form",
+            "hack",
+            "h4ck",
+        };
+        //verificar os processos rodando
         public static String IsCheatProcessRunning()
         {
             //validar o nome dos processos rodando no computador
-
             Process[] processes = Process.GetProcesses();
-
 
             foreach (Process process in processes)
             {
@@ -245,7 +244,7 @@ namespace FuncoesAC
                 {
                     _server.ReportMessage("Nova DLL injetada: ", false);
                     _server.ReportMessage(lpFileName.ToString(), false);
-                    IntPtr result = LoadLibraryW(lpFileName);
+                    IntPtr result = LoadLibraryA(lpFileName);
                     return result;
                 }
                 else

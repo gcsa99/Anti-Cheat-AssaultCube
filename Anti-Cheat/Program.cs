@@ -11,49 +11,46 @@ namespace AntiCheat
             string targetExe = null;
             string channelName = null;
 
-            // Process command line arguments or print instructions and retrieve argument value
+            // Processa os argumentos da janela de comando ou escreve as instruções
             ProcessArgs(args, out targetPID, out targetExe);
 
             if (targetPID <= 0 && string.IsNullOrEmpty(targetExe))
                 return;
 
-            // Create the IPC server using the FileMonitorIPC.ServiceInterface class as a singleton
             EasyHook.RemoteHooking.IpcCreateServer<FuncoesAC.ServerInterface>(ref channelName, System.Runtime.Remoting.WellKnownObjectMode.Singleton);
 
-            // Get the full path to the assembly we want to inject into the target process
+            //Informo o caminho completo da DLL que quero injetar no processo
             string injectionLibrary = Path.Combine(Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location), "AntiCheatDLL.dll");
 
             try
             {
-                // Injecting into existing process by Id
+                // Injetando no processo a partir do PID
                 if (targetPID > 0)
                 {
                     Console.WriteLine("Tentando injetar no processo: {0}", targetPID);
 
-                    // inject into existing process
                     EasyHook.RemoteHooking.Inject(
-                        targetPID,          // ID of process to inject into
-                        injectionLibrary,   // 32-bit library to inject (if target is 32-bit)
-                        injectionLibrary,   // 64-bit library to inject (if target is 64-bit)
-                        channelName         // the parameters to pass into injected library
-                                            // ...
+                        targetPID,          // PID
+                        injectionLibrary,   // Caminho para arquivo de 32 bits
+                        injectionLibrary,   // Caminho para arquivo de 64 bits
+                        channelName         // mais parametros passados para a injeção
+
+                    // ...
                     );
                 }
-                // Create a new process and then inject into it
+                // Cria um novo processo e injeto nele
                 else if (!string.IsNullOrEmpty(targetExe))
                 {
                     Console.WriteLine("Tentando criar e injetar no processo {0}", targetExe);
-                    // start and inject into a new process
                     EasyHook.RemoteHooking.CreateAndInject(
-                        targetExe,          // executable to run
-                        "",                 // command line arguments for target
-                        0,                  // additional process creation flags to pass to CreateProcess
-                        EasyHook.InjectionOptions.DoNotRequireStrongName, // allow injectionLibrary to be unsigned
-                        injectionLibrary,   // 32-bit library to inject (if target is 32-bit)
-                        injectionLibrary,   // 64-bit library to inject (if target is 64-bit)
-                        out targetPID,      // retrieve the newly created process ID
-                        channelName         // the parameters to pass into injected library
-                                            // ...
+                        targetExe,          // caminho para o executavel
+                        "",                 // argumento para executar o processo na linha de comando
+                        0,                  // flags adicionais para a criação do processo
+                        EasyHook.InjectionOptions.DoNotRequireStrongName, // Permitir a injeção
+                        injectionLibrary,   // Caminho para arquivo de 32 bits
+                        injectionLibrary,   // Caminho para arquivo de 64 bits
+                        out targetPID,      // Pega o PID do processo recem-criado
+                        channelName         // mais parametros passados para a injeção
                     );
                 }
             }
@@ -95,7 +92,7 @@ namespace AntiCheat
             Console.WriteLine();
             Console.ResetColor();
 
-            // Load any parameters
+            // Carrega todos os parametros passados
             while ((args.Length != 1) || !Int32.TryParse(args[0], out targetPID) || !File.Exists(args[0]))
             {
                 if (targetPID > 0)
